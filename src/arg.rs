@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Parser, ValueEnum, builder::PossibleValue};
+use clap::{Parser, Subcommand, ValueEnum, builder::PossibleValue};
 
 use image::{ImageFormat, ImageFormat::*};
 
@@ -81,7 +81,9 @@ impl Format {
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 pub struct Cli {
-    /// Sets a custom config file
+    #[arg(short = 'd', long = "dir", name = "out-dir")]
+    pub out_dir: Option<PathBuf>,
+
     #[arg(short = 'o', long = "out", name = "out")]
     pub out_name: Option<PathBuf>,
 
@@ -94,23 +96,24 @@ pub struct Cli {
     #[arg(short = 'y', long, default_value_t = 720)]
     pub height: u32,
 
-    #[arg(default_value_t = Goal::RedGreen)]
-    pub goal: Goal,
+    #[command(subcommand)]
+    pub render: Goal,
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
-pub enum Goal {
-    RedGreen,
-    RedBlue,
-    BlueGreen,
+pub enum Color {
+    R = 0,
+    G = 1,
+    B = 2,
 }
 
-impl ToString for Goal {
-    fn to_string(&self) -> String {
-        match self {
-            Self::RedGreen => "red-green".into(),
-            Self::RedBlue => "red-blue".into(),
-            Self::BlueGreen => "blue-green".into(),
-        }
-    }
+#[derive(Clone, Copy, Debug, Subcommand)]
+pub enum Goal {
+    #[command()]
+    Gradient {
+        #[arg(default_value = "r")]
+        xcolor: Color,
+        #[arg(default_value = "g")]
+        ycolor: Color,
+    },
 }

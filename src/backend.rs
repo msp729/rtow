@@ -1,8 +1,8 @@
-use crate::arg::{Cli, Goal};
+use crate::arg::{Cli, Color, Goal};
 use crate::err::Err;
 use image::{ImageFormat, Rgb, RgbImage};
+use rayon::prelude::*;
 use std::io::{BufWriter, Seek, Write};
-use std::path::PathBuf;
 
 pub fn setup(args: &Cli) -> RgbImage {
     return RgbImage::new(args.width, args.height);
@@ -14,32 +14,27 @@ fn ifrac(numerator: u32, denominator: u32) -> u8 {
     (scaled / denominator) as u8
 }
 
-fn color(x: u32, y: u32, w: u32, h: u32, goal: Goal) -> [u8; 3] {
-    match goal {
-        Goal::RedGreen => [ifrac(x, w), ifrac(y, h), ifrac(0, 1)],
-        Goal::RedBlue => [ifrac(x, w), ifrac(0, 1), ifrac(y, h)],
-        Goal::BlueGreen => [ifrac(0, 1), ifrac(y, h), ifrac(x, w)],
-    }
+fn color(cell: &mut Rgb<u8>, x: u32, y: u32, w: u32, h: u32, xcolor: Color, ycolor: Color) {
+    cell.0[0] &= 0;
+    cell.0[1] &= 0;
+    cell.0[2] &= 0;
+    cell.0[xcolor as usize] |= ifrac(x, w);
+    cell.0[ycolor as usize] |= ifrac(y, h);
 }
 
 pub fn render(img: &mut RgbImage, goal: Goal) {
     let w = img.width();
     let h = img.height();
     match goal {
-        Goal::RedGreen | Goal::RedBlue | Goal::BlueGreen => {
-            img.enumerate_rows_mut().for_each(|(y, row)| {
-                eprint!("\rCurrently on row {y} of {h}...");
-                row.for_each(|(x, y, cell)| cell.0 = color(x, y, w, h, goal));
-            });
-            eprintln!("Done!");
-        }
+        Goal::Gradient { xcolor, ycolor } => img
+            .par_enumerate_pixels_mut()
+            .for_each(|(x, y, cell)| color(cell, x, y, w, h, xcolor, ycolor)),
     }
 }
 
 pub fn print<W: Write + Seek>(
     f: &mut BufWriter<W>,
     img: RgbImage,
-    name: PathBuf,
     fmt: ImageFormat,
 ) -> Result<(), Err> {
     if !fmt.can_write() {
