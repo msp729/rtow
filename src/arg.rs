@@ -2,12 +2,15 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand, ValueEnum, builder::PossibleValue};
 
-use image::{ImageFormat, ImageFormat::*};
+use image::ImageFormat;
+use image::ImageFormat::{
+    Avif, Bmp, Dds, Farbfeld, Gif, Hdr, Ico, Jpeg, OpenExr, Pcx, Png, Pnm, Qoi, Tga, Tiff, WebP,
+};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Format(pub ImageFormat);
 
-const FORMAT_VARIANTS: &'static [Format] = &[
+const FORMAT_VARIANTS: &[Format] = &[
     Format(Png),
     Format(Jpeg),
     Format(Gif),
@@ -55,25 +58,25 @@ impl ValueEnum for Format {
 }
 
 impl Format {
-    pub fn ext(&self) -> String {
+    pub fn ext(self) -> String {
         match self {
-            &Format(Png) => "png".into(),
-            &Format(Jpeg) => "jpeg".into(),
-            &Format(Gif) => "gif".into(),
-            &Format(WebP) => "webp".into(),
-            &Format(Pnm) => "pnm".into(),
-            &Format(Tiff) => "tiff".into(),
-            &Format(Tga) => "tga".into(),
-            &Format(Dds) => "dds".into(),
-            &Format(Bmp) => "bmp".into(),
-            &Format(Ico) => "ico".into(),
-            &Format(Hdr) => "hdr".into(),
-            &Format(OpenExr) => "openexr".into(),
-            &Format(Farbfeld) => "farbfeld".into(),
-            &Format(Avif) => "avif".into(),
-            &Format(Qoi) => "qoi".into(),
-            &Format(Pcx) => "pcx".into(),
-            _ => "".into(),
+            Format(Png) => "png".into(),
+            Format(Jpeg) => "jpeg".into(),
+            Format(Gif) => "gif".into(),
+            Format(WebP) => "webp".into(),
+            Format(Pnm) => "pnm".into(),
+            Format(Tiff) => "tiff".into(),
+            Format(Tga) => "tga".into(),
+            Format(Dds) => "dds".into(),
+            Format(Bmp) => "bmp".into(),
+            Format(Ico) => "ico".into(),
+            Format(Hdr) => "hdr".into(),
+            Format(OpenExr) => "openexr".into(),
+            Format(Farbfeld) => "farbfeld".into(),
+            Format(Avif) => "avif".into(),
+            Format(Qoi) => "qoi".into(),
+            Format(Pcx) => "pcx".into(),
+            _ => String::new(),
         }
     }
 }

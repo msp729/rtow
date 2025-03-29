@@ -1,4 +1,5 @@
 #![feature(never_type, try_trait_v2)]
+#![warn(clippy::pedantic)]
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::PathBuf;
@@ -23,7 +24,7 @@ fn main() -> Result<(), err::Err> {
 
     let mut rays = backend::setup(&args);
     backend::render(&mut rays, args.render);
-    backend::print(&mut file, rays, out_fmt.0)?;
+    backend::print(&mut file, &rays, out_fmt.0)?;
 
-    return Ok(());
+    Ok(())
 }

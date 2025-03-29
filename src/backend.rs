@@ -5,9 +5,10 @@ use rayon::prelude::*;
 use std::io::{BufWriter, Seek, Write};
 
 pub fn setup(args: &Cli) -> RgbImage {
-    return RgbImage::new(args.width, args.height);
+    RgbImage::new(args.width, args.height)
 }
 
+#[allow(clippy::cast_possible_truncation)]
 fn ifrac(numerator: u32, denominator: u32) -> u8 {
     let big = numerator << 8;
     let scaled = big.saturating_sub(1);
@@ -34,7 +35,7 @@ pub fn render(img: &mut RgbImage, goal: Goal) {
 
 pub fn print<W: Write + Seek>(
     f: &mut BufWriter<W>,
-    img: RgbImage,
+    img: &RgbImage,
     fmt: ImageFormat,
 ) -> Result<(), Err> {
     if !fmt.can_write() {
