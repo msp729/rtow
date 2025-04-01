@@ -1,4 +1,4 @@
-#![feature(never_type, try_trait_v2)]
+#![feature(const_trait_impl)]
 #![warn(clippy::pedantic)]
 use std::fs::File;
 use std::io::BufWriter;
@@ -22,9 +22,9 @@ fn main() -> Result<(), err::Err> {
     let file = File::create(&out_path)?;
     let mut file = BufWriter::new(file);
 
-    let mut rays = backend::setup(&args);
-    backend::render(&mut rays, args.render);
-    backend::print(&mut file, &rays, out_fmt.0)?;
+    let mut scene = backend::setup(&args);
+    backend::render(&mut scene);
+    backend::print(&mut file, &scene, out_fmt.0)?;
 
     Ok(())
 }

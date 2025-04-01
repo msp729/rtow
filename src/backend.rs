@@ -1,43 +1,45 @@
-use crate::arg::{Cli, Color, Goal};
+use crate::arg::Cli;
 use crate::err::Err;
-use image::{ImageFormat, Rgb, RgbImage};
+use image::{ImageFormat, RgbImage};
 use rayon::prelude::*;
 use std::io::{BufWriter, Seek, Write};
 
-pub fn setup(args: &Cli) -> RgbImage {
-    RgbImage::new(args.width, args.height)
+mod ray;
+mod scene;
+mod set;
+mod vec3;
+
+pub struct Render {
+    pub img: RgbImage,
+    pub scene: scene::Scene,
 }
 
-#[allow(clippy::cast_possible_truncation)]
-fn ifrac(numerator: u32, denominator: u32) -> u8 {
-    let big = numerator << 8;
-    let scaled = big.saturating_sub(1);
-    (scaled / denominator) as u8
+pub fn setup(args: &Cli) -> Render {
+    Render {
+        img: RgbImage::new(args.width, args.height),
+        scene: scene::Scene::from(args),
+    }
 }
 
-fn color(cell: &mut Rgb<u8>, x: u32, y: u32, w: u32, h: u32, xcolor: Color, ycolor: Color) {
-    cell.0[0] &= 0;
-    cell.0[1] &= 0;
-    cell.0[2] &= 0;
-    cell.0[xcolor as usize] |= ifrac(x, w);
-    cell.0[ycolor as usize] |= ifrac(y, h);
-}
-
-pub fn render(img: &mut RgbImage, goal: Goal) {
+pub fn render(trg: &mut Render) {
+    let Render { img, scene } = trg;
     let w = img.width();
     let h = img.height();
-    match goal {
-        Goal::Gradient { xcolor, ycolor } => img
-            .par_enumerate_pixels_mut()
-            .for_each(|(x, y, cell)| color(cell, x, y, w, h, xcolor, ycolor)),
-    }
+    img.par_enumerate_pixels_mut().for_each(|(x, y, cell)| {
+        *cell = scene.color(
+            f64::from(x) / f64::from(w - 1),
+            f64::from(y) / f64::from(h - 1),
+        );
+    });
 }
 
 pub fn print<W: Write + Seek>(
     f: &mut BufWriter<W>,
-    img: &RgbImage,
+    src: &Render,
     fmt: ImageFormat,
 ) -> Result<(), Err> {
+    let Render { img, scene: _ } = src;
+
     if !fmt.can_write() {
         eprintln!("Cannot encode into requested format.");
         std::process::exit(65); // 65 DATAERR, user asked for invalid operation

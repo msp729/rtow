@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand, ValueEnum, builder::PossibleValue};
+use clap::{builder::PossibleValue, Parser, Subcommand, ValueEnum};
 
 use image::ImageFormat;
 use image::ImageFormat::{
@@ -33,7 +33,7 @@ impl ValueEnum for Format {
     fn to_possible_value(&self) -> Option<PossibleValue> {
         match self {
             Format(Png) => Some(PossibleValue::from("png")),
-            Format(Jpeg) => Some(PossibleValue::from("jpeg")),
+            Format(Jpeg) => Some(PossibleValue::from("jpeg").alias("jpg")),
             Format(Gif) => Some(PossibleValue::from("gif")),
             Format(WebP) => Some(PossibleValue::from("webp")),
             Format(Pnm) => Some(PossibleValue::from("pnm")),
@@ -103,20 +103,13 @@ pub struct Cli {
     pub render: Goal,
 }
 
-#[derive(Clone, Copy, Debug, ValueEnum)]
-pub enum Color {
-    R = 0,
-    G = 1,
-    B = 2,
-}
-
 #[derive(Clone, Copy, Debug, Subcommand)]
 pub enum Goal {
     #[command()]
     Gradient {
-        #[arg(default_value = "r")]
-        xcolor: Color,
-        #[arg(default_value = "g")]
-        ycolor: Color,
+        #[arg(default_value_t = 0.0)]
+        theta: f64,
+        #[arg(default_value_t = 0.0)]
+        phi: f64,
     },
 }
