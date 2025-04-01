@@ -99,6 +99,11 @@ pub struct Cli {
     #[arg(short = 'y', long, default_value_t = 720)]
     pub height: u32,
 
+    #[arg(short, long, default_value_t = 0.0)]
+    pub theta: f64,
+    #[arg(short, long, default_value_t = 0.0)]
+    pub phi: f64,
+
     #[command(subcommand)]
     pub render: Goal,
 }
@@ -106,10 +111,14 @@ pub struct Cli {
 #[derive(Clone, Copy, Debug, Subcommand)]
 pub enum Goal {
     #[command()]
-    Gradient {
-        #[arg(default_value_t = 0.0)]
-        theta: f64,
-        #[arg(default_value_t = 0.0)]
-        phi: f64,
+    Gradient,
+    #[command()]
+    Sky,
+    #[command()]
+    Japan {
+        #[arg(default_value_t = 2.0)]
+        dist: f64,
+        #[arg(default_value_t = 1.0)]
+        radius: f64,
     },
 }

@@ -5,7 +5,8 @@ use super::{
     set::Set,
     vec3::{Vec3, ZERO},
 };
-use crate::backend::Cli;
+use crate::arg::Cli;
+use crate::arg::Goal::{Gradient, Japan, Sky};
 
 #[derive(Clone, Copy, Debug)]
 pub struct View {
@@ -25,7 +26,7 @@ impl View {
             center,
             focal_length: focus,
             port_w: w * dims.0,
-            port_h: h * dims.0,
+            port_h: h * dims.1,
         }
     }
 
@@ -63,9 +64,11 @@ impl From<&Cli> for View {
         let ratio: f64 = f64::from(cli.width) / f64::from(cli.height);
         let w = 2f64;
         let h = w / ratio;
+        let phi = cli.phi;
+        let theta = cli.theta;
         match cli.render {
             // both are 0: 0,0,-1
-            crate::arg::Goal::Gradient { theta, phi } => Self::new(
+            Gradient | Sky | Japan { .. } => Self::new(
                 ZERO,
                 Vec3(theta.sin() * phi.cos(), phi.sin(), -theta.cos() * phi.cos()),
                 (w, h),
